@@ -1,0 +1,112 @@
+---
+title: "Prediction Write Up"
+author: "Susana 21/02/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Synopsis
+The goal of the project is to predict the way the subject did the exercise. This is the "classe" variable in the training set. The data was build considering the columns with no NA values and removed the first columns used for identification.
+
+We made an exploratory analysis to look how is the distribution of classe column.
+We compared 3 different methods random forest (rf), Stochastic Gradient Boosting (gbm) and Linear Discriminant Analysis (lda).
+
+We compared the accuracy to choose a model. The random forest model has the highest Accuracy. 
+
+Finally, we used prediction model with the random forest method to predict 20 different test cases.
+ 
+
+```{r read_data}
+library(AppliedPredictiveModeling)
+library(ggplot2)
+library(caret)
+set.seed(25)
+
+#Get the data
+training0 <- read.table("~/08_machine/pml-training.csv", header=T, sep=",", na.strings=c("NA","#DIV/0!",""))
+testing0 <- read.table("~/08_machine/pml-testing.csv", header=T, sep=",", na.strings=c("NA","#DIV/0!",""))
+ 
+#Remove rows data that has NA and remove first identity columns
+
+training <- training0[, colSums(is.na(training0)) == 0 ]
+testing0  <- testing0[, colSums(is.na(testing0)) == 0  ]
+training <- training[, -c(1:7) ]
+
+ inTrain = createDataPartition(y=training$classe, p =0.7, list=FALSE)
+ training = training[ inTrain,]
+ testing = training[-inTrain,]
+
+```
+##Exploratory data analysis 
+In this section we made an exploratory data analysis first we made use the function dim to see how many rows and columns has the training and testing data, we observed the unique values for variable classe and we made a plot that shows the frequency of variable classe.
+
+```{r PLOTS, echo=TRUE}
+
+ dim(training)
+ dim(testing)
+ unique(training$classe)
+
+ggplot(training, aes(classe, na.rm=TRUE)) + geom_bar(fill = "#0073C2FF") 
+
+```
+## Random Forest Model
+In this step we made a random forest model. It takes several minutes to execute.
+
+```{r modelingRF, echo=TRUE}
+modFit1 <- train( classe ~ . , method="rf", data= training, metric ="Accuracy", na.rm=TRUE, 
+                  trControl=trainControl(method='repeatedcv',
+                                              number=2,
+                                              repeats=3))
+
+modFit1
+modFit1$finalModel
+
+```
+## GBM Model
+In this step we made a gradient boosting method for building the model. It takes several minutes to execute.
+
+```{r modelingGBM, echo=TRUE}
+
+modFit_gbm <- train( classe ~ ., method="gbm", data= training, metric ="Accuracy", verbose=FALSE, 
+                     trControl=trainControl(method='repeatedcv',
+                                              number=2,
+                                              repeats=3))
+modFit_gbm
+modFit_gbm$finalModel
+
+```
+## Linear Discriminant Analysis
+Finally, we made a model using the method Linear Discriminant Analysis.
+
+```{r modelingLDA, echo=TRUE}
+
+modFit_lda <- train( classe ~ ., method="lda", data= training, metric ="Accuracy", verbose=FALSE, na.rm=TRUE, 
+                     trControl=trainControl(method='repeatedcv', number=2, repeats=3) )
+modFit_lda
+#modFit_lda$finalModel
+
+```
+
+
+## Accuracy results
+The Model with the highest accuracy was random forest, then it was used for prediction.
+
+rf -- Accuracy :0.9834510
+
+## Prediction
+In this step we predict 20 different test cases for the variable classe.
+
+```{r prediction, echo=TRUE}
+predict(modFit1, testing0 )
+
+
+```
+
+
+
+
+
+
+
