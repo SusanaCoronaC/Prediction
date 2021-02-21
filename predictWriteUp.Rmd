@@ -37,6 +37,8 @@ training <- training[, -c(1:7) ]
  inTrain = createDataPartition(y=training$classe, p =0.7, list=FALSE)
  training = training[ inTrain,]
  testing = training[-inTrain,]
+ 
+
 
 ```
 ##Exploratory data analysis 
@@ -91,7 +93,7 @@ modFit_lda
 
 
 ## Accuracy results
-The Model with the highest accuracy was random forest, then it was used for prediction.
+The Model with the highest accuracy was random forest, and the results observed with the sample error of the models, then random forest was used for prediction.
 
 rf -- Accuracy :0.9834510
 
